@@ -33,6 +33,12 @@ Completed
   - [x] Configure `socket.io` server in `backend/src/config/socket.ts`
   - [x] Integrate `socket.io` with Express server in `app.ts` and `server.ts`
   - [x] Update `orderController.ts` to emit `new_order` and `order_status_changed`
+  - [x] Install `socket.io-client` in `customer-app`
+  - [x] Implement `customer-app/src/services/socket.ts`
+  - [x] Install `socket.io-client` in `restaurant-app`
+  - [x] Implement `restaurant-app/src/services/socket.ts`
+  - [x] Add custom audible chime + Alert for `new_order` in `restaurant-app`
+  - [x] Verify changes and push to GitHub
 - Phase 3 - Backend Foundation
   - [x] Initialize Node.js/Express (TypeScript)
   - [x] Configure Environment Variables
