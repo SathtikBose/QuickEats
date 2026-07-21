@@ -28,7 +28,15 @@ Completed
   - [x] Generating Customer App Screens
   - [x] Generating Restaurant App Screens
   - [x] Generating Admin Dashboard Screens
-- Real-Time Order Tracking Tasks
+- Real-Time Order# Production Deployment Tasks
+
+- [x] Create `backend/Dockerfile`
+- [x] Create `backend/.dockerignore`
+- [x] Check `backend/package.json` build and start scripts
+- [x] Create `admin-dashboard/vercel.json`
+- [x] Create `customer-app/eas.json`
+- [x] Create `restaurant-app/eas.json`
+- [x] Commit all deployment configs to GitHub
   - [x] Install `socket.io` in backend
   - [x] Configure `socket.io` server in `backend/src/config/socket.ts`
   - [x] Integrate `socket.io` with Express server in `app.ts` and `server.ts`
