@@ -1,7 +1,9 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCartStore } from '../src/store/cartStore';
+import { api } from '../src/services/api';
 
 export default function CartScreen() {
   const router = useRouter();
@@ -12,13 +14,50 @@ export default function CartScreen() {
   const tax = itemTotal * 0.05;
   const grandTotal = itemTotal + deliveryFee + tax;
 
-  const handleCheckout = () => {
+  const [isCheckingOut, setIsCheckingOut] = React.useState(false);
+
+  const handleCheckout = async () => {
     if (items.length === 0) {
       Alert.alert('Empty Cart', 'Please add items to your cart first.');
       return;
     }
-    // TODO: Connect to backend / Stripe
-    Alert.alert('Checkout Stub', 'Proceeding to checkout...');
+    
+    try {
+      setIsCheckingOut(true);
+      const restaurantId = items[0].restaurantId;
+      
+      const payload = {
+        restaurantId,
+        items,
+        deliveryFee,
+        tax
+      };
+
+      // Ensure api client is imported correctly below
+      const response = await api.post('/orders', payload);
+      
+      if (response.data.success) {
+        const { clientSecret, order } = response.data.data;
+        // Mocking the Stripe flow for now until keys are provided
+        Alert.alert(
+          'Stripe Payment Mock', 
+          `Payment Intent created with Secret: ${clientSecret.substring(0, 10)}...\nOrder: ${order.orderNumber}`,
+          [
+            { 
+              text: 'Simulate Payment Success', 
+              onPress: () => {
+                clearCart();
+                router.replace('/orders');
+              }
+            }
+          ]
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Checkout Failed', error.response?.data?.message || error.message);
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   return (
@@ -85,10 +124,15 @@ export default function CartScreen() {
       {/* Checkout Bar */}
       <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
         <TouchableOpacity 
-          className="bg-red-500 p-4 rounded-xl items-center shadow-lg"
+          className={`p-4 rounded-xl items-center shadow-lg ${isCheckingOut ? 'bg-red-400' : 'bg-red-500'}`}
           onPress={handleCheckout}
+          disabled={isCheckingOut}
         >
-          <Text className="text-white font-bold text-lg">Proceed to Checkout</Text>
+          {isCheckingOut ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-lg">Proceed to Checkout</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
