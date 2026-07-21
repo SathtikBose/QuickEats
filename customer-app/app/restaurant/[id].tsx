@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../../src/services/api';
+import { useCartStore } from '../../../src/store/cartStore';
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('Recommended');
+  const { items, addItem, getTotal, restaurantId } = useCartStore();
 
   const { data: restaurant, isLoading: loadingRest } = useQuery({
     queryKey: ['restaurant', id],
@@ -90,43 +92,65 @@ export default function RestaurantScreen() {
 
         {/* Menu Items */}
         <View className="space-y-6 pb-24">
-          {menuItems.map((item: any) => (
-            <View key={item._id} className="flex-row justify-between items-center border-b border-gray-100 pb-6">
-              <View className="flex-1 pr-4">
-                <View className="flex-row items-center mb-1">
-                  <View className={`w-4 h-4 border ${item.isVegetarian ? 'border-green-500' : 'border-red-500'} items-center justify-center mr-2`}>
-                    <View className={`w-2 h-2 rounded-full ${item.isVegetarian ? 'bg-green-500' : 'bg-red-500'}`} />
+          {menuItems.map((item: any) => {
+            const cartItem = items.find(i => i._id === item._id);
+            return (
+              <View key={item._id} className="flex-row justify-between items-center border-b border-gray-100 pb-6">
+                <View className="flex-1 pr-4">
+                  <View className="flex-row items-center mb-1">
+                    <View className={`w-4 h-4 border ${item.isVegetarian ? 'border-green-500' : 'border-red-500'} items-center justify-center mr-2`}>
+                      <View className={`w-2 h-2 rounded-full ${item.isVegetarian ? 'bg-green-500' : 'bg-red-500'}`} />
+                    </View>
+                    <Text className="text-lg font-bold text-gray-900">{item.name}</Text>
                   </View>
-                  <Text className="text-lg font-bold text-gray-900">{item.name}</Text>
+                  <Text className="text-gray-900 font-bold mb-1">${item.basePrice.toFixed(2)}</Text>
+                  <Text className="text-gray-500 text-sm">{item.description}</Text>
                 </View>
-                <Text className="text-gray-900 font-bold mb-1">${item.basePrice.toFixed(2)}</Text>
-                <Text className="text-gray-500 text-sm">{item.description}</Text>
+                
+                <View className="items-center">
+                  <View className="w-24 h-24 bg-gray-200 rounded-xl mb-[-12px]" />
+                  <TouchableOpacity 
+                    className="bg-white border border-red-500 px-6 py-2 rounded-lg shadow-sm"
+                    onPress={() => {
+                      try {
+                        addItem({
+                          _id: item._id,
+                          name: item.name,
+                          price: item.basePrice,
+                          isVeg: item.isVegetarian,
+                          restaurantId: id as string
+                        });
+                      } catch (error: any) {
+                        alert(error.message);
+                      }
+                    }}
+                  >
+                    <Text className="text-red-500 font-bold text-center">
+                      {cartItem ? `ADD (${cartItem.quantity})` : 'ADD'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              
-              <View className="items-center">
-                <View className="w-24 h-24 bg-gray-200 rounded-xl mb-[-12px]" />
-                <TouchableOpacity className="bg-white border border-red-500 px-6 py-2 rounded-lg shadow-sm">
-                  <Text className="text-red-500 font-bold text-center">ADD</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
 
       {/* Floating View Cart Bar */}
-      <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
-        <TouchableOpacity 
-          className="bg-red-500 p-4 rounded-xl flex-row justify-between items-center shadow-lg"
-          onPress={() => router.push('/cart')}
-        >
-          <View>
-            <Text className="text-white font-bold">2 items</Text>
-            <Text className="text-white text-xs">Extra charges may apply</Text>
-          </View>
-          <Text className="text-white font-bold text-lg">View Cart ➔</Text>
-        </TouchableOpacity>
-      </View>
+      {items.length > 0 && restaurantId === id && (
+        <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
+          <TouchableOpacity 
+            className="bg-red-500 p-4 rounded-xl flex-row justify-between items-center shadow-lg"
+            onPress={() => router.push('/cart')}
+          >
+            <View>
+              <Text className="text-white font-bold">{items.reduce((sum, i) => sum + i.quantity, 0)} items | ${getTotal().toFixed(2)}</Text>
+              <Text className="text-white text-xs">Extra charges may apply</Text>
+            </View>
+            <Text className="text-white font-bold text-lg">View Cart ➔</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

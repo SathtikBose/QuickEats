@@ -1,19 +1,25 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCartStore } from '../src/store/cartStore';
 
 export default function CartScreen() {
   const router = useRouter();
+  const { items, incrementQuantity, decrementQuantity, getTotal, clearCart } = useCartStore();
 
-  const cartItems = [
-    { id: 1, name: 'Whopper Combo', price: 12.99, quantity: 1, isVeg: false },
-    { id: 3, name: 'French Fries', price: 3.49, quantity: 2, isVeg: true },
-  ];
-
-  const itemTotal = 19.97;
-  const deliveryFee = 2.99;
-  const tax = 1.50;
+  const itemTotal = getTotal();
+  const deliveryFee = itemTotal > 0 ? 2.99 : 0;
+  const tax = itemTotal * 0.05;
   const grandTotal = itemTotal + deliveryFee + tax;
+
+  const handleCheckout = () => {
+    if (items.length === 0) {
+      Alert.alert('Empty Cart', 'Please add items to your cart first.');
+      return;
+    }
+    // TODO: Connect to backend / Stripe
+    Alert.alert('Checkout Stub', 'Proceeding to checkout...');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -29,8 +35,8 @@ export default function CartScreen() {
         <View className="bg-white rounded-2xl p-4 mb-6 shadow-sm">
           <Text className="font-bold text-lg mb-4 text-gray-900">Your Items</Text>
           
-          {cartItems.map((item) => (
-            <View key={item.id} className="flex-row justify-between items-center mb-4">
+          {items.map((item) => (
+            <View key={item._id} className="flex-row justify-between items-center mb-4">
               <View className="flex-1 flex-row items-center">
                 <View className={`w-3 h-3 border ${item.isVeg ? 'border-green-500' : 'border-red-500'} items-center justify-center mr-3`}>
                   <View className={`w-1.5 h-1.5 rounded-full ${item.isVeg ? 'bg-green-500' : 'bg-red-500'}`} />
@@ -40,9 +46,9 @@ export default function CartScreen() {
               
               <View className="flex-row items-center">
                 <View className="flex-row items-center bg-red-50 rounded-lg px-2 py-1 mr-4">
-                  <TouchableOpacity><Text className="text-red-500 font-bold px-2 text-lg">-</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => decrementQuantity(item._id)}><Text className="text-red-500 font-bold px-2 text-lg">-</Text></TouchableOpacity>
                   <Text className="font-bold text-gray-800 px-2">{item.quantity}</Text>
-                  <TouchableOpacity><Text className="text-red-500 font-bold px-2 text-lg">+</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => incrementQuantity(item._id)}><Text className="text-red-500 font-bold px-2 text-lg">+</Text></TouchableOpacity>
                 </View>
                 <Text className="font-bold text-gray-900 w-16 text-right">${(item.price * item.quantity).toFixed(2)}</Text>
               </View>
@@ -80,10 +86,7 @@ export default function CartScreen() {
       <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
         <TouchableOpacity 
           className="bg-red-500 p-4 rounded-xl items-center shadow-lg"
-          onPress={() => {
-             // Navigate to checkout
-             // router.push('/checkout')
-          }}
+          onPress={handleCheckout}
         >
           <Text className="text-white font-bold text-lg">Proceed to Checkout</Text>
         </TouchableOpacity>
