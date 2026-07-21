@@ -106,7 +106,28 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
       data: user,
     });
   } catch (error) {
+  } catch (error) {
     console.error('Profile Error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getAllUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    const users = await User.find().select('-password');
+    return res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const updateUserStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isBlocked } = req.body;
+    const user = await User.findByIdAndUpdate(id, { isBlocked }, { new: true }).select('-password');
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

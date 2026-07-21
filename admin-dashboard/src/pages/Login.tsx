@@ -1,16 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
+import { api, setAuthToken } from '../services/api';
+import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuthStore();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Stub
-    navigate('/');
+    setError('');
+
+    try {
+      setLoading(true);
+      const response = await api.post('/users/login', { email, password });
+      
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+        if (user.role !== 'admin') {
+          setError('Access Denied. Only admins can log in here.');
+          return;
+        }
+        
+        login(user, token);
+        setAuthToken(token);
+        navigate('/');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +50,11 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
+          {error ? (
+            <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg mb-4 border border-red-100">
+              {error}
+            </div>
+          ) : null}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
             <input
@@ -48,9 +78,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors mt-6"
+            disabled={loading}
+            className={`w-full text-white font-bold py-3 px-4 rounded-xl transition-colors mt-6 ${loading ? 'bg-red-400' : 'bg-red-500 hover:bg-red-600'}`}
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
       </div>

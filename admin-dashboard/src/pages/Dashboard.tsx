@@ -1,17 +1,50 @@
 import { Users, Store, ShoppingBag, TrendingUp } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../services/api';
+import { ActivityIndicator } from 'react-native';
 
 export default function Dashboard() {
+  const { data: statsData, isLoading } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      // In a real prod app, there would be a dedicated stats endpoint
+      // For this demo, we can just aggregate from the list endpoints
+      const [usersRes, restRes] = await Promise.all([
+        api.get('/users'),
+        api.get('/restaurants/admin/all')
+      ]);
+      
+      const users = usersRes.data.data;
+      const restaurants = restRes.data.data;
+      
+      return {
+        totalUsers: users.length,
+        totalRestaurants: restaurants.length,
+        pendingRestaurants: restaurants.filter((r: any) => !r.isApproved).length
+      };
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex justify-center items-center p-20">
+        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const s = statsData || { totalUsers: 0, totalRestaurants: 0, pendingRestaurants: 0 };
+
   const stats = [
-    { title: 'Total Revenue', value: '$45,231', increase: '+12.5%', icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-50' },
-    { title: 'Active Users', value: '1,204', increase: '+5.2%', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { title: 'Restaurants', value: '48', increase: '+2.1%', icon: Store, color: 'text-orange-500', bg: 'bg-orange-50' },
-    { title: 'Orders Today', value: '156', increase: '+18.4%', icon: ShoppingBag, color: 'text-red-500', bg: 'bg-red-50' },
+    { title: 'Active Users', value: s.totalUsers.toString(), icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { title: 'Total Restaurants', value: s.totalRestaurants.toString(), icon: Store, color: 'text-orange-500', bg: 'bg-orange-50' },
+    { title: 'Pending Approvals', value: s.pendingRestaurants.toString(), icon: ShoppingBag, color: 'text-red-500', bg: 'bg-red-50' },
   ];
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
