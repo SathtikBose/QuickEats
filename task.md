@@ -46,9 +46,9 @@ Completed
 
 Pending
 - Phase 6 - Customer App (Frontend)
-  - [ ] Switch to `customer-app` Git Branch
-  - [ ] Configure Navigation (Expo Router)
-  - [ ] Implement Auth Screens
+  - [x] Merge all branches into `master` and consolidate repositories
+  - [x] Initialize Customer App Skeleton & Navigation (Expo Router)
+  - [x] Implement Auth Screens
   - [ ] Implement Home & Search Screens
   - [ ] Implement Restaurant & Cart Screens
 
