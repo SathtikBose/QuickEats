@@ -49,8 +49,8 @@ Pending
   - [x] Merge all branches into `master` and consolidate repositories
   - [x] Initialize Customer App Skeleton & Navigation (Expo Router)
   - [x] Implement Auth Screens
-  - [ ] Implement Home & Search Screens
-  - [ ] Implement Restaurant & Cart Screens
+  - [x] Implement Home & Search Screens
+  - [x] Implement Restaurant & Cart Screens
 
 Blockers
 None

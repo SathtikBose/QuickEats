@@ -1,15 +1,23 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../src/services/api';
 
 export default function HomeScreen() {
   const router = useRouter();
 
   const categories = ['Burger', 'Pizza', 'Sushi', 'Dessert'];
-  const featuredRestaurants = [
-    { id: 1, name: 'Burger King', rating: 4.5, time: '20-30 min' },
-    { id: 2, name: 'Pizza Hut', rating: 4.2, time: '30-45 min' }
-  ];
+  
+  const { data: restaurantsData, isLoading } = useQuery({
+    queryKey: ['restaurants'],
+    queryFn: async () => {
+      const response = await api.get('/restaurants');
+      return response.data.data;
+    }
+  });
+
+  const featuredRestaurants = restaurantsData || [];
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -45,17 +53,26 @@ export default function HomeScreen() {
 
         {/* Featured Restaurants */}
         <Text className="text-xl font-bold text-gray-900 mb-4">Featured Restaurants</Text>
-        <View className="space-y-4">
-          {featuredRestaurants.map((restaurant) => (
-            <TouchableOpacity key={restaurant.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex-row">
-              <View className="w-24 h-24 bg-gray-200 rounded-xl mr-4" />
-              <View className="justify-center flex-1">
-                <Text className="text-lg font-bold text-gray-900">{restaurant.name}</Text>
-                <Text className="text-gray-500 mt-1">⭐ {restaurant.rating} • {restaurant.time}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#ef4444" />
+        ) : (
+          <View className="space-y-4">
+            {featuredRestaurants.map((restaurant: any) => (
+              <TouchableOpacity 
+                key={restaurant._id} 
+                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex-row"
+                onPress={() => router.push(`/restaurant/${restaurant._id}`)}
+              >
+                <View className="w-24 h-24 bg-gray-200 rounded-xl mr-4" />
+                <View className="justify-center flex-1">
+                  <Text className="text-lg font-bold text-gray-900">{restaurant.restaurantName}</Text>
+                  <Text className="text-gray-500 mt-1">⭐ {restaurant.averageRating} • 30 mins</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
         <View className="h-10" />
       </ScrollView>
     </SafeAreaView>

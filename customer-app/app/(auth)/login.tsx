@@ -1,21 +1,38 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { api, setAuthToken } from '../../src/services/api';
+import { useAuthStore } from '../../src/store/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
 
-  const handleLogin = () => {
-    // Basic stub for UI completion
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
-    // TODO: Integrate API call
-    router.replace('/(tabs)');
+
+    try {
+      setLoading(true);
+      const response = await api.post('/users/login', { email, password });
+      
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+        login(user, token);
+        setAuthToken(token);
+        router.replace('/(tabs)');
+      }
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,8 +63,13 @@ export default function LoginScreen() {
       <TouchableOpacity 
         className="w-full bg-red-500 py-4 rounded-xl mb-4"
         onPress={handleLogin}
+        disabled={loading}
       >
-        <Text className="text-white text-center font-bold text-lg">Sign In</Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text className="text-white text-center font-bold text-lg">Sign In</Text>
+        )}
       </TouchableOpacity>
 
       <View className="flex-row justify-center mt-4">

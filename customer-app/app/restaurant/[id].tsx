@@ -1,29 +1,50 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../src/services/api';
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('Recommended');
 
-  // Dummy data
-  const restaurant = {
-    name: 'Burger King',
-    rating: 4.5,
-    reviews: '1k+',
-    time: '20-30 min',
-    distance: '1.2 km',
-  };
+  const { data: restaurant, isLoading: loadingRest } = useQuery({
+    queryKey: ['restaurant', id],
+    queryFn: async () => {
+      const response = await api.get(`/restaurants/${id}`);
+      return response.data.data;
+    }
+  });
 
+  const { data: menuData, isLoading: loadingMenu } = useQuery({
+    queryKey: ['menu', id],
+    queryFn: async () => {
+      const response = await api.get(`/restaurants/${id}/menu`);
+      return response.data.data;
+    }
+  });
+
+  // Dummy categories based on data
   const categories = ['Recommended', 'Combos', 'Burgers', 'Sides', 'Beverages'];
-  
-  const menuItems = [
-    { id: 1, name: 'Whopper Combo', price: '$12.99', desc: 'Classic whopper with medium fries and drink', isVeg: false },
-    { id: 2, name: 'Crispy Veg Burger', price: '$6.99', desc: 'Crispy veg patty with fresh lettuce', isVeg: true },
-    { id: 3, name: 'French Fries', price: '$3.49', desc: 'Crispy golden fries', isVeg: true },
-  ];
+  const menuItems = menuData || [];
+
+  if (loadingRest || loadingMenu) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <ActivityIndicator size="large" color="#ef4444" />
+      </View>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <Text>Restaurant not found</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -45,11 +66,10 @@ export default function RestaurantScreen() {
       <ScrollView className="flex-1 -mt-6 bg-white rounded-t-3xl pt-6 px-4" showsVerticalScrollIndicator={false}>
         {/* Restaurant Info */}
         <View className="mb-6">
-          <Text className="text-3xl font-bold text-gray-900 mb-2">{restaurant.name}</Text>
+          <Text className="text-3xl font-bold text-gray-900 mb-2">{restaurant.restaurantName}</Text>
           <View className="flex-row items-center flex-wrap mb-4">
-            <Text className="text-gray-700 mr-4">⭐ {restaurant.rating} ({restaurant.reviews})</Text>
-            <Text className="text-gray-700 mr-4">⏱ {restaurant.time}</Text>
-            <Text className="text-gray-700">📍 {restaurant.distance}</Text>
+            <Text className="text-gray-700 mr-4">⭐ {restaurant.averageRating} ({restaurant.totalReviews})</Text>
+            <Text className="text-gray-700 mr-4">⏱ 30 mins</Text>
           </View>
         </View>
 
@@ -70,17 +90,17 @@ export default function RestaurantScreen() {
 
         {/* Menu Items */}
         <View className="space-y-6 pb-24">
-          {menuItems.map((item) => (
-            <View key={item.id} className="flex-row justify-between items-center border-b border-gray-100 pb-6">
+          {menuItems.map((item: any) => (
+            <View key={item._id} className="flex-row justify-between items-center border-b border-gray-100 pb-6">
               <View className="flex-1 pr-4">
                 <View className="flex-row items-center mb-1">
-                  <View className={`w-4 h-4 border ${item.isVeg ? 'border-green-500' : 'border-red-500'} items-center justify-center mr-2`}>
-                    <View className={`w-2 h-2 rounded-full ${item.isVeg ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <View className={`w-4 h-4 border ${item.isVegetarian ? 'border-green-500' : 'border-red-500'} items-center justify-center mr-2`}>
+                    <View className={`w-2 h-2 rounded-full ${item.isVegetarian ? 'bg-green-500' : 'bg-red-500'}`} />
                   </View>
                   <Text className="text-lg font-bold text-gray-900">{item.name}</Text>
                 </View>
-                <Text className="text-gray-900 font-bold mb-1">{item.price}</Text>
-                <Text className="text-gray-500 text-sm">{item.desc}</Text>
+                <Text className="text-gray-900 font-bold mb-1">${item.basePrice.toFixed(2)}</Text>
+                <Text className="text-gray-500 text-sm">{item.description}</Text>
               </View>
               
               <View className="items-center">
