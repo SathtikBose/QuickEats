@@ -2,16 +2,42 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } fro
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { api, setAuthToken } from '../../src/services/api';
+import { useAuthStore } from '../../src/store/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
 
-  const handleLogin = () => {
-    // Stub
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.post('/users/login', { email, password });
+      
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+        if (user.role !== 'restaurant_owner' && user.role !== 'admin') {
+          Alert.alert('Access Denied', 'Only restaurant owners can access this app.');
+          return;
+        }
+        
+        login(user, token);
+        setAuthToken(token);
+        router.replace('/(tabs)');
+      }
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.response?.data?.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,7 +70,11 @@ export default function LoginScreen() {
         onPress={handleLogin}
         disabled={loading}
       >
-        <Text className="text-white text-center font-bold text-lg">Sign In</Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text className="text-white text-center font-bold text-lg">Sign In</Text>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );

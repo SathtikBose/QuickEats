@@ -1,20 +1,49 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../src/services/api';
+import { useAuthStore } from '../../src/store/authStore';
 
 export default function OrdersScreen() {
   const [activeTab, setActiveTab] = useState('New');
+  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const orders = [
-    { id: '1001', items: '2x Whopper, 1x Coke', total: 28.50, status: 'New', time: '2 mins ago' },
-    { id: '1002', items: '1x Crispy Veg Burger', total: 6.99, status: 'Preparing', time: '15 mins ago' },
-    { id: '1003', items: '3x French Fries', total: 10.47, status: 'Completed', time: '1 hr ago' },
-  ];
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ['restaurant-orders', user?.restaurantId],
+    queryFn: async () => {
+      // Again, get restaurant ID if not in user object
+      const resData = await api.get('/restaurants/owner/me');
+      const restaurantId = resData.data.data._id;
+      const response = await api.get(`/orders/restaurant/${restaurantId}`);
+      return response.data.data;
+    },
+    enabled: !!user
+  });
 
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'New') return order.status === 'New';
-    if (activeTab === 'Active') return order.status === 'Preparing';
-    return order.status === 'Completed';
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
+      await api.put(`/orders/${orderId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-orders'] });
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to update order status');
+    }
+  });
+
+  const updateStatus = (orderId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  const orders = ordersData || [];
+
+  const filteredOrders = orders.filter((order: any) => {
+    if (activeTab === 'New') return order.status === 'pending';
+    if (activeTab === 'Active') return order.status === 'preparing' || order.status === 'out_for_delivery';
+    return order.status === 'delivered' || order.status === 'cancelled';
   });
 
   return (
@@ -38,31 +67,49 @@ export default function OrdersScreen() {
 
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
         <View className="space-y-4 pb-10">
-          {filteredOrders.length === 0 ? (
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#ef4444" mt-10 />
+          ) : filteredOrders.length === 0 ? (
             <Text className="text-center text-gray-500 mt-10">No orders here.</Text>
           ) : (
-            filteredOrders.map((order) => (
-              <View key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            filteredOrders.map((order: any) => (
+              <View key={order._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                 <View className="flex-row justify-between mb-2">
-                  <Text className="font-bold text-lg text-gray-900">Order #{order.id}</Text>
-                  <Text className="text-gray-500">{order.time}</Text>
+                  <Text className="font-bold text-lg text-gray-900">Order #{order._id.slice(-6).toUpperCase()}</Text>
+                  <Text className="text-gray-500">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                 </View>
-                <Text className="text-gray-600 mb-2">{order.items}</Text>
-                <Text className="font-bold text-gray-900 mb-4">${order.total.toFixed(2)}</Text>
+                
+                {/* Render items cleanly */}
+                <View className="mb-2">
+                  {order.items.map((item: any, idx: number) => (
+                     <Text key={idx} className="text-gray-600">{item.quantity}x {item.menuItem?.name || 'Item'}</Text>
+                  ))}
+                </View>
+                
+                <Text className="font-bold text-gray-900 mb-4">${order.totalAmount.toFixed(2)}</Text>
                 
                 {activeTab === 'New' && (
                   <View className="flex-row space-x-2">
-                    <TouchableOpacity className="flex-1 bg-gray-200 py-3 rounded-lg items-center mr-2">
+                    <TouchableOpacity 
+                      className="flex-1 bg-gray-200 py-3 rounded-lg items-center mr-2"
+                      onPress={() => updateStatus(order._id, 'cancelled')}
+                    >
                       <Text className="text-gray-700 font-bold">Reject</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="flex-1 bg-red-500 py-3 rounded-lg items-center ml-2">
+                    <TouchableOpacity 
+                      className="flex-1 bg-red-500 py-3 rounded-lg items-center ml-2"
+                      onPress={() => updateStatus(order._id, 'preparing')}
+                    >
                       <Text className="text-white font-bold">Accept</Text>
                     </TouchableOpacity>
                   </View>
                 )}
                 
-                {activeTab === 'Active' && (
-                  <TouchableOpacity className="w-full bg-green-500 py-3 rounded-lg items-center">
+                {activeTab === 'Active' && order.status === 'preparing' && (
+                  <TouchableOpacity 
+                    className="w-full bg-green-500 py-3 rounded-lg items-center"
+                    onPress={() => updateStatus(order._id, 'out_for_delivery')}
+                  >
                     <Text className="text-white font-bold">Mark Ready</Text>
                   </TouchableOpacity>
                 )}
