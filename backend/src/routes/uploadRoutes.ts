@@ -6,7 +6,8 @@ const router = Router();
 
 router.post('/image', authenticate as any, upload.single('image'), (req: Request, res: Response) => {
   try {
-    if (!req.file) {
+    const fileReq = req as any;
+    if (!fileReq.file) {
       return res.status(400).json({ success: false, message: 'No image provided' });
     }
 
@@ -14,7 +15,7 @@ router.post('/image', authenticate as any, upload.single('image'), (req: Request
       success: true,
       message: 'Image uploaded successfully',
       data: {
-        url: req.file.path,
+        url: fileReq.file.path,
       },
     });
   } catch (error) {
