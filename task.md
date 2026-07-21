@@ -33,9 +33,14 @@ Completed
   - [x] Configure Environment Variables
   - [x] Setup MongoDB Connection
   - [x] Setup Basic Error Handling & Logging
+- Phase 4 - Database Schema implementation
+  - [x] Implemented Group 1 (Admin, User, Address)
+  - [x] Implemented Group 2 (Restaurant, Category, Food, FoodVariant)
+  - [x] Implemented Group 3 (Cart, CartItem, Order, OrderItem, Payment)
+  - [x] Implemented Group 4 (Review, Favorite, Coupon, Offer, Banner, Notification, Earnings)
 
 Pending
-- Phase 4 - Database Schema implementation
+- Phase 5 - API Implementation (Auth, Restaurant, Orders)
 
 Blockers
 None
