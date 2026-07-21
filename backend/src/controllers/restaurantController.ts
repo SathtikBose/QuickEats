@@ -68,3 +68,12 @@ export const updateRestaurantStatus = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+export const getAllRestaurants = async (req: Request, res: Response) => {
+  try {
+    const restaurants = await Restaurant.find().sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, data: restaurants });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
