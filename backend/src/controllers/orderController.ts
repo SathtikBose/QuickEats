@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { Order, OrderItem, Food, Cart, CartItem, OrderStatus } from '../models';
+import { Order, OrderItem, Food, Cart, CartItem, OrderStatus, User } from '../models';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import Stripe from 'stripe';
+import { sendOrderConfirmationEmail } from '../utils/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2025-01-27.acacia' as any,
@@ -48,6 +49,12 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         metadata: { orderId: order._id.toString() },
       });
       clientSecret = paymentIntent.client_secret || 'mock_client_secret';
+    }
+
+    // Send Email via Resend
+    const user = await User.findById(userId);
+    if (user && user.email) {
+      await sendOrderConfirmationEmail(user.email, orderNumber, grandTotal);
     }
 
     return res.status(201).json({
