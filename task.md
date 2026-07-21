@@ -38,9 +38,19 @@ Completed
   - [x] Implemented Group 2 (Restaurant, Category, Food, FoodVariant)
   - [x] Implemented Group 3 (Cart, CartItem, Order, OrderItem, Payment)
   - [x] Implemented Group 4 (Review, Favorite, Coupon, Offer, Banner, Notification, Earnings)
+- Phase 5 - API Implementation (Auth, Restaurant, Orders)
+  - [x] Implemented JWT and validation middleware
+  - [x] Implemented Auth/Users endpoints
+  - [x] Implemented Restaurant and Menu endpoints
+  - [x] Implemented Order creation and history endpoints
 
 Pending
-- Phase 5 - API Implementation (Auth, Restaurant, Orders)
+- Phase 6 - Customer App (Frontend)
+  - [ ] Switch to `customer-app` Git Branch
+  - [ ] Configure Navigation (Expo Router)
+  - [ ] Implement Auth Screens
+  - [ ] Implement Home & Search Screens
+  - [ ] Implement Restaurant & Cart Screens
 
 Blockers
 None
