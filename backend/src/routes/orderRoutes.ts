@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { createOrder, getOrderHistory } from '../controllers/orderController';
-import { authenticate } from '../middlewares/authMiddleware';
+import { authenticate, authorize } from '../middlewares/authMiddleware';
+import { createOrder, getOrderHistory, updateOrderStatus } from '../controllers/orderController';
 
 const router = Router();
 
-router.post('/', authenticate as any, createOrder as any);
-router.get('/', authenticate as any, getOrderHistory as any);
+router.post('/', authenticate, createOrder);
+router.get('/history', authenticate, getOrderHistory);
+router.put('/:id/status', authenticate, authorize('restaurant', 'admin'), updateOrderStatus);
 
 export default router;
