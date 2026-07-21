@@ -48,9 +48,16 @@ Pending
 - Phase 6 - Customer App (Frontend)
   - [x] Merge all branches into `master` and consolidate repositories
   - [x] Initialize Customer App Skeleton & Navigation (Expo Router)
-  - [x] Implement Auth Screens
-  - [x] Implement Home & Search Screens
-  - [x] Implement Restaurant & Cart Screens
+  - [x] Implement Auth Screens (UI & API Integration)
+  - [x] Implement Home & Search Screens (UI & API Integration)
+  - [x] Implement Restaurant & Cart Screens (UI & API Integration)
+
+Pending
+- Phase 7 - Restaurant App (Frontend)
+  - [ ] Initialize Restaurant App Skeleton & Navigation (Expo Router)
+  - [ ] Implement Restaurant Login & Dashboard
+  - [ ] Implement Menu Management Screens
+  - [ ] Implement Orders & Earnings Screens
 
 Blockers
 None
