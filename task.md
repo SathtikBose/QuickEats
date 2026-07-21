@@ -54,8 +54,8 @@ Pending
 
 Pending
 - Phase 7 - Restaurant App (Frontend)
-  - [ ] Initialize Restaurant App Skeleton & Navigation (Expo Router)
-  - [ ] Implement Restaurant Login & Dashboard
+  - [x] Initialize Restaurant App Skeleton & Navigation (Expo Router)
+  - [x] Implement Restaurant Login & Dashboard
   - [ ] Implement Menu Management Screens
   - [ ] Implement Orders & Earnings Screens
 
