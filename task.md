@@ -53,11 +53,11 @@ Pending
   - [x] Implement Restaurant & Cart Screens (UI & API Integration)
 
 Pending
-- Phase 7 - Restaurant App (Frontend)
-  - [x] Initialize Restaurant App Skeleton & Navigation (Expo Router)
-  - [x] Implement Restaurant Login & Dashboard
-  - [ ] Implement Menu Management Screens
-  - [ ] Implement Orders & Earnings Screens
+- Phase 8 - Admin Dashboard (Frontend)
+  - [x] Initialize Admin Dashboard Skeleton (Next.js or Vite)
+  - [x] Implement Admin Login
+  - [x] Implement Admin Analytics Dashboard
+  - [x] Implement User & Restaurant Management Tables
 
 Blockers
 None
