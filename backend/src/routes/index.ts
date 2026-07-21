@@ -1,10 +1,17 @@
 import { Router } from 'express';
+import userRoutes from './userRoutes';
+import restaurantRoutes from './restaurantRoutes';
+import orderRoutes from './orderRoutes';
 
 const router = Router();
 
 // Health check endpoint
 router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'success', message: 'API is running successfully' });
+  res.status(200).json({ status: 'ok', message: 'API is running smoothly' });
 });
+
+router.use('/users', userRoutes);
+router.use('/restaurants', restaurantRoutes);
+router.use('/orders', orderRoutes);
 
 export default router;
