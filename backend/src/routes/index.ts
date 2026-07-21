@@ -2,6 +2,7 @@ import { Router } from 'express';
 import userRoutes from './userRoutes';
 import restaurantRoutes from './restaurantRoutes';
 import orderRoutes from './orderRoutes';
+import uploadRoutes from './uploadRoutes';
 
 const router = Router();
 
@@ -13,5 +14,6 @@ router.get('/health', (req, res) => {
 router.use('/users', userRoutes);
 router.use('/restaurants', restaurantRoutes);
 router.use('/orders', orderRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;
