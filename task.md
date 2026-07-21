@@ -28,6 +28,11 @@ Completed
   - [x] Generating Customer App Screens
   - [x] Generating Restaurant App Screens
   - [x] Generating Admin Dashboard Screens
+- Real-Time Order Tracking Tasks
+  - [x] Install `socket.io` in backend
+  - [x] Configure `socket.io` server in `backend/src/config/socket.ts`
+  - [x] Integrate `socket.io` with Express server in `app.ts` and `server.ts`
+  - [x] Update `orderController.ts` to emit `new_order` and `order_status_changed`
 - Phase 3 - Backend Foundation
   - [x] Initialize Node.js/Express (TypeScript)
   - [x] Configure Environment Variables
