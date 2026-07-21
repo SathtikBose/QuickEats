@@ -3,8 +3,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../../../src/services/api';
-import { useCartStore } from '../../../src/store/cartStore';
+import { api } from '../../src/services/api';
+import { useCartStore } from '../../src/store/cartStore';
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams();
@@ -144,7 +144,7 @@ export default function RestaurantScreen() {
             onPress={() => router.push('/cart')}
           >
             <View>
-              <Text className="text-white font-bold">{items.reduce((sum, i) => sum + i.quantity, 0)} items | ${getTotal().toFixed(2)}</Text>
+              <Text className="text-white font-bold">{items.reduce((sum: number, i: any) => sum + i.quantity, 0)} items | ${getTotal().toFixed(2)}</Text>
               <Text className="text-white text-xs">Extra charges may apply</Text>
             </View>
             <Text className="text-white font-bold text-lg">View Cart ➔</Text>
